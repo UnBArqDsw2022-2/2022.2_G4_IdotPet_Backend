@@ -1,0 +1,23 @@
+version: "3.3"
+
+services:
+  idotpet:
+    build:
+      dockerfile: docker/Dockerfile
+      context: .
+    container_name: idotpet
+    environment:
+      RESULTADOS_BASE_PATH: '/app/resultados'
+    volumes:
+      - ./src:/app
+    ports:
+      - 8000:8000
+
+  db:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: idotpet
