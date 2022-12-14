@@ -2,6 +2,8 @@ DROP DATABASE IF EXISTS db_idotpet;
 
 CREATE DATABASE db_idotpet;
 
+\c db_idotpet;
+
 -- Criando domínios
 
 CREATE DOMAIN POSITIVE_INT INTEGER CHECK (VALUE > 0);
@@ -23,7 +25,7 @@ CREATE TABLE pet (
 
   CHECK (porte_pet IN ('G', 'g', 'M', 'm', 'P', 'p')),
   CHECK (genero_pet IN ('M', 'm', 'F', 'f')),
-  PRIMARY KEY (id_pet, nome)
+  PRIMARY KEY (id_pet, nome_pet)
 );
 
 
@@ -56,19 +58,18 @@ CREATE TABLE endereco (
   complemento TEXT,
   referencia TEXT,
   
-  CHECK (uf IN ('RO', 'AC', 'AM', 'RR', 'PA', 'AP', 'TO', 'MA', 'PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA', 'MG', 'ES', 'RJ', 'SP', 'PR', 'SC', 'RS', 'MS', 'MT', 'GO', 'DF')),
+  CHECK (uf IN ('RO', 'AC', 'AM', 'RR', 'PA', 'AP', 'TO', 'MA', 'PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA', 'MG', 'ES', 'RJ', 'SP', 'PR', 'SC', 'RS', 'MS', 'MT', 'GO', 'DF'))
 );
 
 CREATE TABLE mensagem (
   id SERIAL PRIMARY KEY,
-  data_mensagem CURRENT_DATE NOT NULL,
+  data_mensagem TIMESTAMP DEFAULT now(),
   destinatario INTEGER NOT NULL, -- chave estrangeira de usuario
   remetente INTEGER NOT NULL, -- chave estrangeira de usuario
-  texto TEXT,
-
-  CHECK (destinatario != remetente)
+  texto TEXT
 );
 
 CREATE TABLE anuncio (
-  id_anuncio
+  id_anuncio SERIAL PRIMARY KEY
+
 );
