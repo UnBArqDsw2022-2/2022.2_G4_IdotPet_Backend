@@ -1,15 +1,16 @@
 version: "3.3"
 
 services:
-  idotpet:
+  app:
     build:
       dockerfile: docker/Dockerfile
       context: .
-    container_name: idotpet
+    depends_on:
+      - db
     environment:
-      RESULTADOS_BASE_PATH: '/app/resultados'
+      DB_HOST: db
     volumes:
-      - ./src:/app
+      - ./src:/app/src
     ports:
       - 8000:8000
 

@@ -8,7 +8,12 @@ FROM python:3.10
 WORKDIR /app
 
 COPY --from=build-dep /install /usr/local
-COPY src .
+COPY src /app/src
+COPY migrations /app/migrations
+COPY alembic.ini /app/alembic.ini
 
-CMD ["python3", "main.py"]
+RUN pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir alembic
+
+CMD ["python3", "src/main.py"]
 
