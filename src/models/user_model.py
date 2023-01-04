@@ -7,7 +7,7 @@ from utils.database import Base
 class UserModel(Base):
     __tablename__ = 'users'
 
-    id_user = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(150), nullable=False)
     email = Column(String(150), unique=True, nullable=False)
     password = Column(String(200), nullable=False)

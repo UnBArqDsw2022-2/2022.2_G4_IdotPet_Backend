@@ -9,8 +9,6 @@ WORKDIR /app
 
 COPY --from=build-dep /install /usr/local
 COPY src /app/src
-COPY migrations /app/migrations
-COPY alembic.ini /app/alembic.ini
 
 RUN pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir alembic

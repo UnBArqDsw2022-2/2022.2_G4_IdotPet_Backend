@@ -15,7 +15,7 @@ class UserCreate(BaseModel):
 
 
 class UserView(BaseModel):
-    id_user: int
+    id: int
     name: str
     email: str
     cpf: str
