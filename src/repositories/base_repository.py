@@ -14,50 +14,38 @@ class BaseRepository(Generic[T]):
         self.db = db
 
     async def create(self, model: T) -> T:
-        async with self.db as session:
-            session.add(model)
-            await session.commit()
-            await session.refresh(model)
+        self.db.add(model)
+        await self.db.commit()
+        await self.db.refresh(model)
         return model
 
-    async def get_by_id(self, id_: int) -> T | None:
-        async with self.db as session:
-            query = select(self.model_class).filter(self.model_class.id == id_)
-            result = await session.execute(query)
-            return result.scalar()
+    async def get_by_id(self, id_: int) -> T:
+        query = select(self.model_class).filter(self.model_class.id == id_)
+        result = await self.db.execute(query)
+        model = result.scalar()
+        if not model:
+            raise HTTPException(status.HTTP_404_NOT_FOUND,
+                detail=f'{self.model_class.__name__.rstrip("Model")} not found')
+        return model
 
     async def get_all(self) -> list[T]:
-        async with self.db as session:
-            query = select(self.model_class).order_by(self.model_class.id)
-            result = await session.execute(query)
-            return result.scalars().all()
+        query = select(self.model_class).order_by(self.model_class.id)
+        result = await self.db.execute(query)
+        return result.scalars().all()
 
     async def update(self, model: T) -> T:
         to_update = await self.get_by_id(model.id)
-        if not to_update:
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
 
-        body = model.dict()
-        for key, value in body.items():
-            if value is None:
-                continue
-
-            setattr(to_update, key, value)
-
-        async with self.db as session:
-            await session.merge(to_update)
-            await session.commit()
-            await session.refresh(to_update)
+        await self.db.merge(to_update)
+        await self.db.commit()
+        await self.db.refresh(to_update)
 
         return to_update
 
     async def delete(self, model: T) -> T:
         to_delete = await self.get_by_id(model.id)
-        if not to_delete:
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
 
-        async with self.db as session:
-            await session.delete(to_delete)
-            await session.commit()
+        await self.db.delete(to_delete)
+        await self.db.commit()
 
         return to_delete

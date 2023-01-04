@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from models.user_model import UserModel
 from repositories import UserRepository
 from utils.security import decode_token, generate_token, pwd_context
-from views.user_view import UserCreate, UserView
+from views.user_view import UserCreate, UserUpdate, UserView
 
 router = APIRouter(prefix='/user', tags=['Usuário'])
 
@@ -40,10 +40,17 @@ async def create(user: UserCreate, repository: UserRepository = Depends(UserRepo
 
 @router.get('/{id}', status_code=status.HTTP_200_OK, response_model=UserView, dependencies=[Depends(decode_token)])
 async def get_by_id(id: int, repository: UserRepository = Depends(UserRepository)):
-    user = await repository.get_by_id(id)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='User not found'
-        )
-    return user
+    return await repository.get_by_id(id)
+
+
+@router.put('/', status_code=status.HTTP_200_OK, response_model=UserView)
+async def update(user: UserUpdate = Depends(UserUpdate), id_: int = Depends(decode_token), repository: UserRepository = Depends(UserRepository)):
+    model = await repository.get_by_id(id_)
+
+    for key, value in user.__dict__.items():
+        if value is None:
+            continue
+
+        setattr(model, key, value)
+
+    return await repository.update(model)

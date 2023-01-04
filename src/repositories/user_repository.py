@@ -17,7 +17,6 @@ class UserRepository(BaseRepository):
         return await super().create(model)
 
     async def get_user_by_email(self, email) -> UserModel | None:
-        async with self.db as session:
-            query = select(UserModel).filter(UserModel.email == email)
-            result = await session.execute(query)
-            return result.scalar()
+        query = select(UserModel).filter(UserModel.email == email)
+        result = await self.db.execute(query)
+        return result.scalar()

@@ -14,6 +14,17 @@ class UserCreate(BaseModel):
         orm_mode = True
 
 
+class UserUpdate(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    password: str | None = None
+    cpf: str | None = None
+    birth_day: date | None = None
+
+    class Config:
+        orm_mode = True
+
+
 class UserView(BaseModel):
     id: int
     name: str
