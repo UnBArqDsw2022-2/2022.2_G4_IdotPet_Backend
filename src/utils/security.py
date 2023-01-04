@@ -3,11 +3,11 @@ from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+from models.user_model import UserModel
 
+from repositories import UserRepository
 from utils.settings import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/user/login')
 
 
@@ -28,6 +28,11 @@ def decode_token(token: str = Depends(oauth2_scheme)) -> int:
                              algorithms=settings.JWT_ALGORITHM)
         return int(payload['sub'])
     except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, 
-            detail='Invalid token')
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+
+async def logged_user(id_: int = Depends(decode_token), repository: UserRepository = Depends(UserRepository)) -> UserModel:
+    try:
+        return await repository.get_by_id(id_)
+    except:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
