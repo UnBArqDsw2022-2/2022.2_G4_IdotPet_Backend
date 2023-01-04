@@ -1,10 +1,11 @@
 from fastapi import Depends
 from sqlalchemy import select
-from models.user_model import UserModel
 
+from models.user_model import UserModel
 from utils.database import AsyncSession, get_db
-from .base_repository import BaseRepository
 from utils.security import pwd_context
+
+from .base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository):
