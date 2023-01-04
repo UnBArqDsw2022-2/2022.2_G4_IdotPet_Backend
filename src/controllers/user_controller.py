@@ -3,8 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 
 from models.user_model import UserModel
-from repositories import user_repository
-from utils.database import AsyncSession, get_db
+from repositories import UserRepository
 from utils.security import generate_token, pwd_context
 from views.user_view import UserCreate, UserView
 
@@ -12,9 +11,8 @@ router = APIRouter(prefix='/user', tags=['Usuário'])
 
 
 @router.post('/login', status_code=status.HTTP_200_OK)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(),
-                db: AsyncSession = Depends(get_db)):
-    user = await user_repository.get_user_by_email(db, form_data.username)
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), repository: UserRepository = Depends(UserRepository)):
+    user = await repository.get_user_by_email(form_data.username)
     if not user or not pwd_context.verify(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -22,20 +20,26 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return {'access_token': generate_token(user.id_user), 'token_type': 'bearer'}
+    return {'access_token': generate_token(user.id), 'token_type': 'bearer'}
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=UserView)
-async def create(user: UserCreate, db: AsyncSession = Depends(get_db)):
+async def create(user: UserCreate, repository: UserRepository = Depends(UserRepository)):
     # TODO: Validate email and cpf
     #   Check if exists some user with cpf or email
-    user.password = pwd_context.hash(user.password)
-    user_model = UserModel(**user.__dict__)
+    user_model = UserModel(**user.dict())
     try:
-        await user_repository.create_user(db, user_model)
+        await repository.create(user_model)
         return user_model
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='email and cpf must be unique',
         )
+
+@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=UserView)
+async def get_by_id(id: int, repository: UserRepository = Depends(UserRepository)):
+    user = await repository.get_by_id(id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='user not found')
+    return user
