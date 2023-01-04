@@ -1,6 +1,6 @@
-from fastapi import Depends
 from typing import Generic, TypeVar
 
+from fastapi import Depends, HTTPException, status
 from sqlalchemy import select
 
 from utils.database import AsyncSession, Base, get_db
@@ -35,7 +35,7 @@ class BaseRepository(Generic[T]):
     async def update(self, model: T) -> T:
         to_update = await self.get_by_id(model.id)
         if not to_update:
-            raise
+            raise HTTPException(status.HTTP_404_NOT_FOUND)
 
         body = model.dict()
         for key, value in body.items():
@@ -54,7 +54,7 @@ class BaseRepository(Generic[T]):
     async def delete(self, model: T) -> T:
         to_delete = await self.get_by_id(model.id)
         if not to_delete:
-            raise 
+            raise HTTPException(status.HTTP_404_NOT_FOUND)
 
         async with self.db as session:
             await session.delete(to_delete)

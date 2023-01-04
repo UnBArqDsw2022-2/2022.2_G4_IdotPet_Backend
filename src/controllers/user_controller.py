@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 
 from models.user_model import UserModel
 from repositories import UserRepository
-from utils.security import generate_token, pwd_context
+from utils.security import decode_token, generate_token, pwd_context
 from views.user_view import UserCreate, UserView
 
 router = APIRouter(prefix='/user', tags=['Usuário'])
@@ -33,13 +33,17 @@ async def create(user: UserCreate, repository: UserRepository = Depends(UserRepo
         return user_model
     except IntegrityError:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail='email and cpf must be unique',
         )
 
-@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=UserView)
+
+@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=UserView, dependencies=[Depends(decode_token)])
 async def get_by_id(id: int, repository: UserRepository = Depends(UserRepository)):
     user = await repository.get_by_id(id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='user not found')
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='User not found'
+        )
     return user
