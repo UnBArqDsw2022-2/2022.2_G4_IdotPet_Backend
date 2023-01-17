@@ -3,9 +3,10 @@ from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from models.user_model import UserModel
 
-from repositories import UserRepository
+from models import BaseUserModel, OngUserModel, UserModel
+from repositories import repository_factory
+from utils.database import AsyncSession, get_db
 from utils.settings import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/user/login')
@@ -31,8 +32,9 @@ def decode_token(token: str = Depends(oauth2_scheme)) -> int:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
 
-async def logged_user(id_: int = Depends(decode_token), repository: UserRepository = Depends(UserRepository)) -> UserModel:
+async def logged_user(id_: int = Depends(decode_token), db: AsyncSession = Depends(get_db)) -> UserModel | OngUserModel:
     try:
+        repository = await repository_factory(BaseUserModel, db)
         return await repository.get_by_id(id_)
     except:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)

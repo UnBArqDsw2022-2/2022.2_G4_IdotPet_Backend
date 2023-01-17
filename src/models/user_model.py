@@ -1,18 +1,12 @@
-from sqlalchemy import Column, Date, DateTime, Integer, String
-from sqlalchemy.sql import func
+from sqlalchemy import Column, String, Integer, ForeignKey
 
-from utils.database import Base
+from .base_user_model import BaseUserModel
 
 
-class UserModel(Base):
+class UserModel(BaseUserModel):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(150), nullable=False)
-    email = Column(String(150), unique=True, nullable=False)
-    password = Column(String(200), nullable=False)
+    id = Column(Integer, ForeignKey('base_users.id'), primary_key=True)
     cpf = Column(String(11), unique=True, nullable=False)
-    birth_day = Column(Date, nullable=False)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(),
-                        onupdate=func.now())
+
+    __mapper_args__ = {'polymorphic_identity': 'user'}

@@ -2,26 +2,30 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 
-from models.user_model import UserModel
-from repositories import UserRepository
+from models import BaseUserModel, OngUserModel, UserModel
+from repositories import BaseUserRepository, repository_factory
+from schemes.user_schemes import UserCreate, UserUpdate, AnyUserView
+from utils.database import AsyncSession, get_db
 from utils.security import generate_token, logged_user
-from views.user_view import UserCreate, UserUpdate, UserView
 
 router = APIRouter(prefix='/user', tags=['Usuário'])
 
 
 @router.post('/login', status_code=status.HTTP_200_OK)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), repository: UserRepository = Depends(UserRepository)):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    repository = BaseUserRepository(BaseUserModel, db)
     user_id = await repository.verify_user_password(form_data.username, form_data.password)
     return {'access_token': generate_token(user_id), 'token_type': 'bearer'}
 
 
-@router.post('/', status_code=status.HTTP_201_CREATED, response_model=UserView)
-async def create(user: UserCreate, repository: UserRepository = Depends(UserRepository)):
+@router.post('/', status_code=status.HTTP_201_CREATED, response_model=AnyUserView)
+async def create(user: UserCreate, db: AsyncSession = Depends(get_db)):
     # TODO: Validate email and cpf
     #   Check if exists some user with cpf or email
-    user_model = UserModel(**user.dict())
     try:
+        user_model_class = deduce_user_model_class(user)
+        user_model = user_model_class(**user.dict(exclude_unset=True))
+        repository = await repository_factory(user_model_class, db)
         await repository.create(user_model)
         return user_model
     except IntegrityError:
@@ -31,13 +35,24 @@ async def create(user: UserCreate, repository: UserRepository = Depends(UserRepo
         )
 
 
-@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=UserView, dependencies=[Depends(logged_user)])
-async def get_by_id(id: int, repository: UserRepository = Depends(UserRepository)):
+def deduce_user_model_class(user: UserCreate) -> type[BaseUserModel]:
+    if user.user_type == UserModel.__mapper_args__['polymorphic_identity']:
+        return UserModel
+    if user.user_type == OngUserModel.__mapper_args__['polymorphic_identity']:
+        return OngUserModel
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                        detail='Invalid user_type')
+
+
+@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=AnyUserView, dependencies=[Depends(logged_user)])
+async def get_by_id(id: int, db: AsyncSession = Depends(get_db)):
+    repository = await repository_factory(BaseUserModel, db)
     return await repository.get_by_id(id)
 
 
-@router.put('/', status_code=status.HTTP_200_OK, response_model=UserView)
-async def update(user: UserUpdate = Depends(UserUpdate), current_user: int = Depends(logged_user), repository: UserRepository = Depends(UserRepository)):
+@router.patch('/', status_code=status.HTTP_200_OK, response_model=AnyUserView)
+async def patch(user: UserUpdate, current_user: BaseUserModel = Depends(logged_user), db: AsyncSession = Depends(get_db)):
+    repository = await repository_factory(BaseUserModel, db)
     for key, value in user.__dict__.items():
         if value is None:
             continue
@@ -47,6 +62,16 @@ async def update(user: UserUpdate = Depends(UserUpdate), current_user: int = Dep
     return await repository.update(current_user)
 
 
-@router.delete('/', status_code=status.HTTP_200_OK, response_model=UserView)
-async def delete(current_user: int = Depends(logged_user), repository: UserRepository = Depends(UserRepository)):
+@router.put('/', status_code=status.HTTP_200_OK, response_model=AnyUserView)
+async def update(user: UserCreate, current_user: BaseUserModel = Depends(logged_user), db: AsyncSession = Depends(get_db)):
+    repository = await repository_factory(BaseUserModel, db)
+    for key, value in user.__dict__.items():
+        setattr(current_user, key, value)
+
+    return await repository.update(current_user)
+
+
+@router.delete('/', status_code=status.HTTP_200_OK, response_model=AnyUserView)
+async def delete(current_user: BaseUserModel = Depends(logged_user), db: AsyncSession = Depends(get_db)):
+    repository = await repository_factory(BaseUserModel, db)
     return await repository.delete(current_user)
