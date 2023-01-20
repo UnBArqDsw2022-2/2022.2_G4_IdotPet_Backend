@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 
@@ -16,6 +16,16 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     repository = BaseUserRepository(BaseUserModel, db)
     user_id = await repository.verify_user_password(form_data.username, form_data.password)
     return {'access_token': generate_token(user_id), 'token_type': 'bearer'}
+
+
+@router.get('/image/{id}', status_code=status.HTTP_200_OK, dependencies=[])
+async def read_image(id: int, db: AsyncSession = Depends(get_db)):
+    repository = await repository_factory(BaseUserModel, db)
+    user = await repository.get_by_id(id)
+    if not user.image:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, 'Usuário não possui imagem')
+
+    return Response(content=user.image, media_type='image/png')
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=AnyUserView)

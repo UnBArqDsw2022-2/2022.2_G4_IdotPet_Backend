@@ -65,7 +65,7 @@ class BaseUserView(BaseModel):
         if not isinstance(value, bytes):
             return None
 
-        return f'{settings.BASE_API_URL}/user/images/{values["id"]}'
+        return f'{settings.BASE_API_URL}/user/image/{values["id"]}'
 
     class Config:
         orm_mode = True

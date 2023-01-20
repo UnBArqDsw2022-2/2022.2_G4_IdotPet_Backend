@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     JWT_TOKEN_EXPIRE_MINUTES: int = 60*24*7
     JWT_ALGORITHM: str = 'HS256'
 
-    BASE_API_URL: str = 'localhost:8000'
+    BASE_API_URL: str = 'http://localhost:8000'
 
 
 settings = Settings()
