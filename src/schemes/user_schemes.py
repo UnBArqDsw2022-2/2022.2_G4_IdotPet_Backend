@@ -1,11 +1,12 @@
+import re
 from datetime import date, datetime
 from typing import Literal
-import re
 
 from pydantic import BaseModel, EmailStr, validator
 
 from utils.optional_fields_metaclass import AllOptionalMeta
 from utils.settings import settings
+from utils import base64
 
 
 class UserCreate(BaseModel):
@@ -22,6 +23,16 @@ class UserCreate(BaseModel):
     # Ong fields
     cnpj: str | None
     pix: str | None
+
+    @validator('image')
+    def validate_image(cls, value: str | bytes):
+        if value is None:
+            return None
+
+        if base64.is_base64(value):
+            return base64.decode(value)
+
+        raise ValueError('Formato inválido para imagem')
 
     @validator('cpf')
     def validate_cpf(cls, value: str, values):

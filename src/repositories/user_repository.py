@@ -1,5 +1,3 @@
-import base64
-
 from fastapi import Depends, HTTPException, status
 from passlib.context import CryptContext
 from sqlalchemy import select
@@ -12,22 +10,12 @@ from .base_repository import BaseRepository
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def is_base64(value: bytes | str) -> bool:
-    try:
-        base64.b64decode(value, validate=True)
-        return True
-    except Exception:
-        return False
-
-
 class BaseUserRepository(BaseRepository):
     def __init__(self, model_class: type[UserModel | OngUserModel], db: AsyncSession = Depends(get_db)) -> None:
         super().__init__(model_class, db)
 
     async def create(self, model: BaseUserModel) -> BaseUserModel:
         model.password = pwd_context.hash(model.password)  # type: ignore
-        if is_base64(model.image):
-            model.image = base64.b64decode(model.image)
         return await super().create(model)
 
     async def get_user_by_email(self, email: str) -> BaseUserModel | None:
