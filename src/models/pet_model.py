@@ -16,6 +16,7 @@ class PetStatus(enum.Enum):
 class PetBreed(Base):
     __tablename__ = 'pet_breed'
 
+    id = Column(Integer, autoincrement=True)
     specie_name = Column(String(150), primary_key=True)
     breed_name = Column(String(150), primary_key=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=True)
@@ -29,14 +30,14 @@ class PetModel(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('base_users.id'))
     name = Column(String(150), nullable=False)
-    description = Column(String(500), nullable=False)
+    description = Column(String(500), nullable=False, default='')
     age = Column(Integer, nullable=False)
     specie_name = Column(String(150), nullable=False)
     breed_name = Column(String(150), nullable=False)
     image = Column(LargeBinary, nullable=True)
     size = Column(String(150), nullable=False)
     gender = Column(Enum('f', 'm', name='pet_gender'), nullable=False)
-    status = Column(Enum(PetStatus))
+    status = Column(Enum(PetStatus), nullable=False, default=PetStatus.AVAILABLE)
     vaccine = Column(Boolean, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(),
