@@ -22,6 +22,12 @@ async def pet_get_all(db: AsyncSession = Depends(get_db)):
     return await repository.get_all()
 
 
+@router.get('/logged', status_code=status.HTTP_200_OK, response_model=list[PetView])
+async def pet_get_all_logger_user(logged_user_id: int = Depends(decode_token), db: AsyncSession = Depends(get_db)):
+    repository = await repository_factory(PetModel, db)
+    return await repository.get_all({'user_id': logged_user_id})
+
+
 @router.patch('/{id}', status_code=status.HTTP_200_OK, response_model=PetView)
 async def pet_patch(pet: PetUpdate, id: int, logger_user_id: int = Depends(decode_token), db: AsyncSession = Depends(get_db)):
     repository = await repository_factory(PetModel, db)
