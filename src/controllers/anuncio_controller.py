@@ -58,9 +58,7 @@ async def get_by_id(id: int, db: AsyncSession = Depends(get_db)):
     repository = await repository_factory(AnuncioModel, db)
     return await repository.get_by_id(id)
 
-@router.post('/', status_code=status.HTTP_201_CREATED, response_model=AnuncioView)
-async def list(anuncio: AnuncioCreate, current_user: BaseUserModel = Depends(logged_user), db: AsyncSession = Depends(get_db)):
-    anuncio_model = AnuncioModel(**{**anuncio.dict(exclude_unset=True), 'user_id': current_user.id})
+@router.get('/', status_code=status.HTTP_201_CREATED, response_model=AnuncioView)
+async def anuncio_get_all(db: AsyncSession = Depends(get_db)):
     repository = await repository_factory(AnuncioModel, db)
-    await repository.get_by_id(anuncio_model)
-    return anuncio_model
+    return await repository.get_all()
