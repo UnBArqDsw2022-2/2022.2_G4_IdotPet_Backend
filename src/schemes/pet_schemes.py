@@ -9,6 +9,8 @@ from utils.settings import settings
 from utils import base64
 
 
+PetGender = Literal['f', 'm']
+
 class PetCreate(BaseModel):
     name: str
     description: str = ''
@@ -17,7 +19,7 @@ class PetCreate(BaseModel):
     breed_name: str
     image: str | None = None
     size: str
-    gender: Literal['f', 'm']
+    gender: PetGender
     vaccine: bool
 
     @validator('image')
@@ -41,13 +43,13 @@ class PetUpdate(PetCreate, metaclass=AllOptionalMeta):
 class PetView(BaseModel):
     id: int
     name: str
-    description: str
+    description: str = ''
     age: int
     specie_name: str
     breed_name: str
-    image: str | None
+    image: str | None = None
     size: str
-    gender: Literal['F', 'M']
+    gender: PetGender
     vaccine: bool
     status: PetStatus
     created_at: datetime
@@ -63,3 +65,8 @@ class PetView(BaseModel):
     class Config:
         orm_mode = True
         validate_assignment = True
+
+
+class PetBreedCreate(BaseModel):
+    specie_name: str
+    breed_names: list[str]
