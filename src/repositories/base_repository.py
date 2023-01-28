@@ -1,4 +1,4 @@
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy import select
@@ -20,15 +20,6 @@ class BaseRepository(Generic[ModelType]):
         await self.db.refresh(model)
         return model
 
-    async def create_all(self, models: list[ModelType]) -> list[ModelType]:
-        for model in models:
-            self.db.add(model)
-        await self.db.commit()
-
-        for model in models:
-            await self.db.refresh(model)
-        return models
-
     async def get_by_id(self, id_: int) -> ModelType:
         query = select(self.model_class).filter(self.model_class.id == id_)
         result = await self.db.execute(query)
@@ -37,30 +28,24 @@ class BaseRepository(Generic[ModelType]):
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'{self.model_class.__name__.rstrip("Model").lstrip("AliasedClass_").lstrip("Base")} not found')
         return model
 
-    async def get_all(self, filters: dict[str, Any] | None = None) -> list[ModelType]:
-        if filters == None:
-            filters = {}
-
-        query = select(self.model_class).filter_by(**filters).order_by(self.model_class.id)
+    async def get_all(self) -> list[ModelType]:
+        query = select(self.model_class).order_by(self.model_class.id)
         result = await self.db.execute(query)
         return result.scalars().all()
 
     async def update(self, model: ModelType) -> ModelType:
-        await self.db.merge(model)
-        await self.db.commit()
-        await self.db.refresh(model)
+        to_update = await self.get_by_id(model.id)
 
-        return model
+        await self.db.merge(to_update)
+        await self.db.commit()
+        await self.db.refresh(to_update)
+
+        return to_update
 
     async def delete(self, model: ModelType) -> ModelType:
-        await self.db.delete(model)
+        to_delete = await self.get_by_id(model.id)
+
+        await self.db.delete(to_delete)
         await self.db.commit()
 
-        return model
-
-    async def delete_all(self, models: list[ModelType]) -> list[ModelType]:
-        for model in models:
-            await self.db.delete(model)
-        await self.db.commit()
-
-        return models
+        return to_delete

@@ -24,8 +24,7 @@ async def create(user: UserCreate, db: AsyncSession = Depends(get_db)):
     #   Check if exists some user with cpf or email
     try:
         user_model_class = deduce_user_model_class(user)
-        valid_fields = set(user_model_class.__table__.columns.keys()) | set(BaseUserModel.__table__.columns.keys())
-        user_model = user_model_class(**user.dict(include=valid_fields,exclude_unset=True))
+        user_model = user_model_class(**user.dict(exclude_unset=True))
         repository = await repository_factory(user_model_class, db)
         await repository.create(user_model)
         return user_model
