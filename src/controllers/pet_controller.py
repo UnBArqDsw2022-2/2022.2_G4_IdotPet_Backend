@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
+from sqlalchemy.exc import IntegrityError
 
 from models import PetModel, PetBreed
 from repositories import repository_factory
@@ -11,9 +12,12 @@ router = APIRouter(prefix='/pet', tags=['Pet'])
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=PetView)
 async def pet_create(pet: PetCreate, logger_user_id: int = Depends(decode_token), db: AsyncSession = Depends(get_db)):
-    pet_model = PetModel(**{**pet.dict(exclude_unset=True), 'user_id': logger_user_id})
-    repository = await repository_factory(PetModel, db)
-    return await repository.create(pet_model)
+    try:
+        pet_model = PetModel(**{**pet.dict(exclude_unset=True), 'user_id': logger_user_id})
+        repository = await repository_factory(PetModel, db)
+        return await repository.create(pet_model)
+    except IntegrityError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, 'Espécie/raça não encontrada')
 
 
 @router.get('/', status_code=status.HTTP_200_OK, response_model=list[PetView], dependencies=[Depends(decode_token)])
