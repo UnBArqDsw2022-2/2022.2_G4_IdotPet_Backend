@@ -19,11 +19,9 @@ class AnuncioUpdate(AnuncioCreate, metaclass=AllOptionalMeta):
     ...
 
 class AnuncioView(BaseModel):
-    id: int
     title : str
     user_id : int
     pet_id : int
-    # pet_id : Column(Integer, ForeignKey('pet.id'))
     description : str | None
     created_at : datetime
     updated_at : datetime
