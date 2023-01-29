@@ -5,7 +5,7 @@
 
 ### Docker
 
-1 - **Para instalar o Docker siga o [tutorial oficinal](https://docs.docker.com/engine/install/)**
+1 - **Para instalar o Docker siga o [tutorial oficial](https://docs.docker.com/engine/install/)**
 
 2 - **Com o Docker instalado, suba o ambiente de desenvolvimento**
 
