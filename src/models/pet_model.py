@@ -1,7 +1,7 @@
 import enum
 
 from sqlalchemy import (Column, DateTime, Integer, ForeignKey,
-                        LargeBinary, String, Enum, Boolean, ForeignKeyConstraint)
+                        LargeBinary, String, Enum, ForeignKeyConstraint)
 from sqlalchemy.sql import func
 
 from utils.database import Base
@@ -30,15 +30,15 @@ class PetModel(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('base_users.id'))
     name = Column(String(150), nullable=False)
-    description = Column(String(500), nullable=False, default='')
     age = Column(Integer, nullable=False)
+    cep = Column(String(20), nullable=True)
     specie_name = Column(String(150), nullable=False)
     breed_name = Column(String(150), nullable=False)
     image = Column(LargeBinary, nullable=True)
     size = Column(String(150), nullable=False)
     gender = Column(Enum('f', 'm', name='pet_gender'), nullable=False)
     status = Column(Enum(PetStatus), nullable=False, default=PetStatus.AVAILABLE)
-    vaccine = Column(Boolean, nullable=False)
+    vaccine = Column(String, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(),
                         onupdate=func.now(), nullable=False)

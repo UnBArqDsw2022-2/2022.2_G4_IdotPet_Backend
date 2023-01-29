@@ -1,8 +1,8 @@
-"""Added
+"""Add pet
 
-Revision ID: 75c8b8381fb3
+Revision ID: e93f186c5ebd
 Revises: 87c4f064386f
-Create Date: 2023-01-28 22:21:38.550929
+Create Date: 2023-01-28 23:52:32.778450
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '75c8b8381fb3'
+revision = 'e93f186c5ebd'
 down_revision = '87c4f064386f'
 branch_labels = None
 depends_on = None
@@ -30,15 +30,15 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('name', sa.String(length=150), nullable=False),
-    sa.Column('description', sa.String(length=500), nullable=False),
     sa.Column('age', sa.Integer(), nullable=False),
+    sa.Column('cep', sa.String(length=20), nullable=True),
     sa.Column('specie_name', sa.String(length=150), nullable=False),
     sa.Column('breed_name', sa.String(length=150), nullable=False),
     sa.Column('image', sa.LargeBinary(), nullable=True),
     sa.Column('size', sa.String(length=150), nullable=False),
     sa.Column('gender', sa.Enum('f', 'm', name='pet_gender'), nullable=False),
     sa.Column('status', sa.Enum('ADOPTED', 'ANNOUNCED', 'AVAILABLE', name='petstatus'), nullable=False),
-    sa.Column('vaccine', sa.Boolean(), nullable=False),
+    sa.Column('vaccine', sa.String(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['specie_name', 'breed_name'], ['pet_breed.specie_name', 'pet_breed.breed_name'], ),

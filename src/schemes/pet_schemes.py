@@ -13,14 +13,13 @@ PetGender = Literal['f', 'm']
 
 class PetCreate(BaseModel):
     name: str
-    description: str = ''
     age: int
     specie_name: str
     breed_name: str
     image: str | None = None
     size: str
     gender: PetGender
-    vaccine: bool
+    vaccine: str
 
     @validator('image')
     def validate_image(cls, value: str | bytes):
@@ -43,14 +42,13 @@ class PetUpdate(PetCreate, metaclass=AllOptionalMeta):
 class PetView(BaseModel):
     id: int
     name: str
-    description: str = ''
     age: int
     specie_name: str
     breed_name: str
     image: str | None = None
     size: str
     gender: PetGender
-    vaccine: bool
+    vaccine: str
     status: PetStatus
     created_at: datetime
     updated_at: datetime
