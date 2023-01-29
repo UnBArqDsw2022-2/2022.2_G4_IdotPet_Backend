@@ -16,7 +16,6 @@ class PetStatus(enum.Enum):
 class PetBreed(Base):
     __tablename__ = 'pet_breed'
 
-    id = Column(Integer, autoincrement=True)
     specie_name = Column(String(150), primary_key=True)
     breed_name = Column(String(150), primary_key=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=True)
