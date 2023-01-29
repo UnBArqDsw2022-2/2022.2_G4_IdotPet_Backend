@@ -30,6 +30,9 @@ class BaseRepository(Generic[ModelType]):
         return models
 
     async def get_by_id(self, id_: int) -> ModelType:
+        if not hasattr(self.model_class, 'id'):
+            raise NotImplementedError('Use get_all instead')
+
         query = select(self.model_class).filter(self.model_class.id == id_)
         result = await self.db.execute(query)
         model = result.scalar()
@@ -41,7 +44,7 @@ class BaseRepository(Generic[ModelType]):
         if filters == None:
             filters = {}
 
-        query = select(self.model_class).filter_by(**filters).order_by(self.model_class.id)
+        query = select(self.model_class).filter_by(**filters).order_by(*self.model_class.__table__.primary_key.columns)
         result = await self.db.execute(query)
         return result.scalars().all()
 
