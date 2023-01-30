@@ -17,7 +17,7 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
-    birth_day: date
+    birth_day: date | None
     # User fields
     cpf: str | None
     # Ong fields
@@ -67,7 +67,7 @@ class BaseUserView(BaseModel):
     user_type: Literal['user', 'ong']
     image: str | None
     name: str
-    birth_day: date
+    birth_day: date | None
     created_at: datetime
     updated_at: datetime
 

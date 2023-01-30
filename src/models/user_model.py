@@ -14,7 +14,7 @@ class BaseUserModel(Base):
     name = Column(String(150), nullable=False)
     email = Column(String(150), unique=True, nullable=False)
     password = Column(String(200), nullable=False)
-    birth_day = Column(Date, nullable=False)
+    birth_day = Column(Date, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(),
                         onupdate=func.now())
