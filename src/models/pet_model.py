@@ -42,7 +42,7 @@ class PetModel(Base):
     updated_at = Column(DateTime, server_default=func.now(),
                         onupdate=func.now(), nullable=False)
 
-    __table_args__ = (
-        ForeignKeyConstraint([specie_name, breed_name],
-                             [PetBreed.specie_name, PetBreed.breed_name]),
-    )
+    # __table_args__ = (
+    #     ForeignKeyConstraint([specie_name, breed_name],
+    #                          [PetBreed.specie_name, PetBreed.breed_name]),
+    # )
